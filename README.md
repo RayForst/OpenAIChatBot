@@ -38,7 +38,6 @@ Before running the application, make sure you have the following installed:
 
    ```
    VITE_OPENAI_API_KEY=your_openai_api_key
-   VITE_APP_CHAT_TITLE=Chat Assistant
    ```
 
    Replace `your_openai_api_key` with your OpenAI API key.
