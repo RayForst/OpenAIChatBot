@@ -1,5 +1,5 @@
 <script setup>
-import ChatBubble from "./components/ChatBubble.vue";
+import Chat from "./components/Chat.vue";
 </script>
 
 <template>
@@ -8,7 +8,7 @@ import ChatBubble from "./components/ChatBubble.vue";
       src="https://www.aiprosync.com/about"
       class="full-page-iframe"
     ></iframe>
-    <ChatBubble />
+    <Chat />
   </main>
 </template>
 
