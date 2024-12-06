@@ -1,13 +1,12 @@
 <script setup>
 import Chat from "./components/Chat.vue";
+
+const site = import.meta.env.VITE_APP_SITE;
 </script>
 
 <template>
   <main>
-    <iframe
-      src="https://www.aiprosync.com/about"
-      class="full-page-iframe"
-    ></iframe>
+    <iframe :src="site" class="full-page-iframe"></iframe>
     <Chat />
   </main>
 </template>

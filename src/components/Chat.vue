@@ -15,61 +15,63 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch, onMounted } from "vue";
 import ChatBubble from "./ChatBubble.vue";
 import ChatWindow from "./ChatWindow.vue";
 import { loadMessages, saveMessages } from "../services/chatStorage";
 import { sendToGPT } from "../services/gptApi";
 
-export default {
-  name: "Chat",
-  components: {
-    ChatBubble,
-    ChatWindow
-  },
-  data() {
-    return {
-      isOpen: false,
-      userMessage: "",
-      messages: [],
-      loading: false,
-      error: null
-    };
-  },
-  mounted() {
-    const saved = loadMessages();
-    if (saved && Array.isArray(saved)) {
-      this.messages = saved;
-    }
-  },
-  methods: {
-    openChat() {
-      this.isOpen = true;
-    },
-    closeChat() {
-      this.isOpen = false;
-    },
-    async sendMessage() {
-      if (!this.userMessage.trim()) return;
-      const userText = this.userMessage.trim();
-      this.messages.push({ author: "user", text: userText });
-      this.userMessage = "";
+const isOpen = ref(false);
+const userMessage = ref("");
+const messages = ref([]);
+const loading = ref(false);
+const error = ref(null);
 
-      this.loading = true;
-      this.error = null;
+const openChat = () => {
+  isOpen.value = true;
+};
 
-      try {
-        const responseText = await sendToGPT(this.messages, userText);
-        this.messages.push({ author: "assistant", text: responseText });
-      } catch (e) {
-        this.error = "Произошла ошибка: " + (e.message || "Потрачено");
-      } finally {
-        this.loading = false;
-      }
-    },
-    updateUserMessage(message) {
-      this.userMessage = message;
-    }
+const closeChat = () => {
+  isOpen.value = false;
+};
+
+const sendMessage = async () => {
+  if (!userMessage.value.trim()) return;
+
+  const userText = userMessage.value.trim();
+  messages.value.push({ author: "user", text: userText });
+  userMessage.value = "";
+
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const responseText = await sendToGPT(messages.value, userText);
+    messages.value.push({ author: "assistant", text: responseText });
+  } catch (e) {
+    error.value = `Произошла ошибка: ${e.message || "Потрачено"}`;
+  } finally {
+    loading.value = false;
   }
 };
+
+const updateUserMessage = (message) => {
+  userMessage.value = message;
+};
+
+onMounted(() => {
+  const savedMessages = loadMessages();
+  if (savedMessages && Array.isArray(savedMessages)) {
+    messages.value = savedMessages;
+  }
+});
+
+watch(
+  messages,
+  (newMessages) => {
+    saveMessages(newMessages);
+  },
+  { deep: true }
+);
 </script>
