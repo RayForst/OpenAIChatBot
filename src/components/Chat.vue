@@ -42,14 +42,6 @@ export default {
       this.messages = saved;
     }
   },
-  watch: {
-    messages: {
-      deep: true,
-      handler(newVal) {
-        saveMessages(newVal);
-      }
-    }
-  },
   methods: {
     openChat() {
       this.isOpen = true;

@@ -1,20 +1,19 @@
 <template>
   <div
-    class="fixed bottom-5 right-5 bg-white rounded-[10px] shadow-lg flex flex-col overflow-hidden"
-    :class="isMobile ? 'w-full h-full' : 'w-[360px] h-[480px]'"
+    ref="chatWindow"
+    class="fixed bg-white rounded-[10px] shadow-lg flex flex-col overflow-hidden"
+    :style="windowStyles"
   >
-    <!-- Шапка окна -->
     <div class="flex justify-between items-center p-4 border-b">
       <h3 class="font-semibold">Чат-ассистент</h3>
       <button
-        @click="$emit('closeChat')"
+        @click="animateClose"
         class="w-[20px] h-[20px] flex items-center justify-center hover:text-gray-300"
       >
         <i class="fas fa-times"></i>
       </button>
     </div>
 
-    <!-- Сообщения -->
     <div class="flex-1 overflow-y-auto p-4" ref="messagesContainer">
       <div
         v-for="(msg, index) in messages"
@@ -42,7 +41,6 @@
       </div>
     </div>
 
-    <!-- Ввод сообщения -->
     <form
       @submit.prevent="$emit('sendMessage')"
       class="p-4 border-t flex items-center"
@@ -65,6 +63,8 @@
 </template>
 
 <script>
+import anime from "animejs";
+
 export default {
   name: "ChatWindow",
   props: {
@@ -73,23 +73,58 @@ export default {
     error: String,
     userMessage: String
   },
+  data() {
+    return {
+      isAnimating: false
+    };
+  },
   computed: {
     isMobile() {
       return window.innerWidth <= 768;
+    },
+    windowStyles() {
+      return "bottom: 20px; right: 20px;";
     }
   },
   mounted() {
-    this.scrollToBottom();
-  },
-  watch: {
-    messages: {
-      handler() {
-        this.scrollToBottom();
-      },
-      deep: true
-    }
+    this.animateOpen();
   },
   methods: {
+    animateOpen() {
+      const chatWindow = this.$refs.chatWindow;
+      chatWindow.style.position = "fixed";
+
+      anime({
+        targets: chatWindow,
+        width: this.isMobile ? ["60px", "100%"] : ["60px", "360px"],
+        height: this.isMobile ? ["60px", "100%"] : ["60px", "480px"],
+        bottom: this.isMobile ? ["20px", "0"] : "20px",
+        right: this.isMobile ? ["20px", "0"] : "20px",
+        borderRadius: ["50%", "10px"],
+        duration: 300,
+        easing: "easeInOutQuad",
+        complete: () => {
+          this.$emit("animationComplete");
+        }
+      });
+    },
+    animateClose() {
+      const chatWindow = this.$refs.chatWindow;
+
+      anime({
+        targets: chatWindow,
+        width: this.isMobile ? ["100%", "0"] : "60px",
+        height: this.isMobile ? ["100%", "0"] : "60px",
+        bottom: "50px",
+        right: "50px",
+        borderRadius: ["10px", "10%"],
+        duration: 300,
+        easing: "easeInOutQuad",
+        complete: () => {
+          this.$emit("closeChat");
+        }
+      });
+    },
     scrollToBottom() {
       this.$nextTick(() => {
         const container = this.$refs.messagesContainer;
@@ -97,6 +132,14 @@ export default {
           container.scrollTop = container.scrollHeight;
         }
       });
+    }
+  },
+  watch: {
+    messages: {
+      handler() {
+        this.scrollToBottom();
+      },
+      deep: true
     }
   }
 };
